@@ -1,6 +1,7 @@
 <apex:page standardController="Contact" recordSetVar="contacts" extensions="permControlController">
     <apex:form >
         <apex:pageBlock mode="edit" title="Generate Permission Controls">
+            <apex:pageMessages />
 
             <!-- Display input fields from field set on Permission Control object -->
             <apex:pageBlockSection columns="2">

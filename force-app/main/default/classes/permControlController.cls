@@ -67,6 +67,7 @@ public class permControlController{
             //Check if any Perm Controls match User plus RPGPR combination. Update if so, Insert if not
             if (existingPermControls.size()>0)
             {
+                //Loop through all existing to check if an update is possible before defaulting to insert
                 for (Integer i = 0; i < existingPermControls.size(); i++)
                 {
                     if (
@@ -97,8 +98,18 @@ public class permControlController{
         }
         System.debug('PermControlInsert List Size ' + permControlInsertList.size());
         System.debug('PermControlUpdate List Size ' + permControlUpdateList.size());
+
         insert permControlInsertList;
         update permControlUpdateList;
+
+        ApexPages.addmessage(new ApexPages.message(ApexPages.severity.CONFIRM,
+        'Created ' + permControlInsertList.size() + ' and Updated ' + permControlUpdateList.size() + ' Permission Control Records')); 
+
+        //clear out values to create new records for same Users
+        permControlInsertList.clear();
+        permControlUpdateList.clear();
+        permControlEntry.clear();
+        
         return null;
     }
 }
