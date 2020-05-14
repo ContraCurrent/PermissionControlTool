@@ -67,21 +67,21 @@ public class permControlController{
             //Check if any Perm Controls match User plus RPGPR combination. Update if so, Insert if not
             if (existingPermControls.size()>0)
             {
-                for (pse__Permission_Control__c perm : existingPermControls)
+                for (Integer i = 0; i < existingPermControls.size(); i++)
                 {
                     if (
-                    (perm.pse__User__c == con.pse__Salesforce_User__c) && (perm.pse__Region__c <> null) && (perm.pse__Region__c == permControlCreate.pse__Region__c)||
-                    (perm.pse__User__c == con.pse__Salesforce_User__c) && (perm.pse__Practice__c <> null) && (perm.pse__Practice__c == permControlCreate.pse__Practice__c)||
-                    (perm.pse__User__c == con.pse__Salesforce_User__c) && (perm.pse__Group__c <> null) && (perm.pse__Group__c == permControlCreate.pse__Group__c)||
-                    (perm.pse__User__c == con.pse__Salesforce_User__c) && (perm.pse__Project__c <> null) && (perm.pse__Project__c == permControlCreate.pse__Project__c)||
-                    (perm.pse__User__c == con.pse__Salesforce_User__c) && (perm.pse__Resource__c <> null) && (perm.pse__Resource__c == permControlCreate.pse__Resource__c))
+                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Region__c <> null) && (existingPermControls[i].pse__Region__c == permControlCreate.pse__Region__c)||
+                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Practice__c <> null) && (existingPermControls[i].pse__Practice__c == permControlCreate.pse__Practice__c)||
+                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Group__c <> null) && (existingPermControls[i].pse__Group__c == permControlCreate.pse__Group__c)||
+                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Project__c <> null) && (existingPermControls[i].pse__Project__c == permControlCreate.pse__Project__c)||
+                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Resource__c <> null) && (existingPermControls[i].pse__Resource__c == permControlCreate.pse__Resource__c))
                     {
-                        permControlCreate.Id = perm.Id;
+                        permControlCreate.Id = existingPermControls[i].Id;
                         permControlUpdateList.add(permControlCreate);
                         System.debug('Added to Update List');
                         break;
                     }
-                    else 
+                    else if (i == (existingPermControls.size() - 1))
                     {
                         permControlInsertList.add(permControlCreate);
                         System.debug('Added to Insert List');
