@@ -99,17 +99,37 @@ public class permControlController{
         System.debug('PermControlInsert List Size ' + permControlInsertList.size());
         System.debug('PermControlUpdate List Size ' + permControlUpdateList.size());
 
-        insert permControlInsertList;
-        update permControlUpdateList;
+        try 
+        {
+            insert permControlInsertList;
+            update permControlUpdateList;
 
-        ApexPages.addmessage(new ApexPages.message(ApexPages.severity.CONFIRM,
-        'Created ' + permControlInsertList.size() + ' and Updated ' + permControlUpdateList.size() + ' Permission Control Records')); 
-
+            if (permControlInsertList.size() > 0 && permControlUpdateList.size() == 0)
+            {
+                ApexPages.addmessage(new ApexPages.message(ApexPages.severity.CONFIRM,
+                'Created ' + permControlInsertList.size() + ' Permission Control Records'));
+            }
+            else if ((permControlInsertList.size() == 0 && permControlUpdateList.size() > 0))
+            {
+                ApexPages.addmessage(new ApexPages.message(ApexPages.severity.CONFIRM,
+                'Updated ' + permControlUpdateList.size() + ' Permission Control Records'));
+            }
+            else 
+            {
+                ApexPages.addmessage(new ApexPages.message(ApexPages.severity.CONFIRM,
+                'Created ' + permControlInsertList.size() + ' and Updated ' + permControlUpdateList.size() + ' Permission Control Records'));
+            }
+        } 
+        catch (Exception ex) 
+        {
+            Apexpages.addMessages(ex);
+        }
+        
         //clear out values to create new records for same Users
         permControlInsertList.clear();
         permControlUpdateList.clear();
         permControlEntry.clear();
-        
+
         return null;
     }
 }
