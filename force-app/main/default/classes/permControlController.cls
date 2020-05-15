@@ -54,6 +54,13 @@ public class permControlController{
                 pse__Timecard_Ops_Edit__c = permControlEntry.pse__Timecard_Ops_Edit__c,
                 pse__View_Task_Manager__c = permControlEntry.pse__View_Task_Manager__c
             );
+            
+            //Double check for common error of Salesforce User being blank
+            if (con.pse__Salesforce_User__c == null)
+            {
+                con.pse__Salesforce_User__c.addError('All Selected Contacts/Resources must have their Salesforce User field populated!');
+                return null;
+            }
 
             //Create list of existing Perm Controls for current selected User
             List<pse__Permission_Control__c> existingPermControls = [
@@ -99,6 +106,7 @@ public class permControlController{
         System.debug('PermControlInsert List Size ' + permControlInsertList.size());
         System.debug('PermControlUpdate List Size ' + permControlUpdateList.size());
 
+        
         try 
         {
             insert permControlInsertList;
