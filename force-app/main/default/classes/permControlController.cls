@@ -57,7 +57,7 @@ public class permControlController{
 
             //Create list of existing Perm Controls for current selected User
             List<pse__Permission_Control__c> existingPermControls = [
-                SELECT Id, pse__User__c, pse__Region__c, pse__Practice__c, pse__Group__c, pse__Project__c, pse__Resource__c
+                SELECT Id, pse__User__c, pse__Region__c, pse__Practice__c, pse__Group__c, pse__Project__c, pse__Resource__c, pse__Start_Date__c, pse__End_Date__c
                 FROM pse__Permission_Control__c
                 WHERE pse__User__c = :con.pse__Salesforce_User__c
                 ];
@@ -67,15 +67,17 @@ public class permControlController{
             //Check if any Perm Controls match User plus RPGPR combination. Update if so, Insert if not
             if (existingPermControls.size()>0)
             {
-                //Loop through all existing to check if an update is possible before defaulting to insert
+                /**Loop through all existing to check if an update is possible before defaulting to insert
+                 * If there are dates on existing, matching record, no update will occur because advanced date handling logic not built out
+                 */
                 for (Integer i = 0; i < existingPermControls.size(); i++)
                 {
-                    if (
-                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Region__c <> null) && (existingPermControls[i].pse__Region__c == permControlCreate.pse__Region__c)||
+                    if ((existingPermControls[i].pse__Start_Date__c == null && existingPermControls[i].pse__End_Date__c == null) &&
+                    ((existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Region__c <> null) && (existingPermControls[i].pse__Region__c == permControlCreate.pse__Region__c)||
                     (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Practice__c <> null) && (existingPermControls[i].pse__Practice__c == permControlCreate.pse__Practice__c)||
                     (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Group__c <> null) && (existingPermControls[i].pse__Group__c == permControlCreate.pse__Group__c)||
                     (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Project__c <> null) && (existingPermControls[i].pse__Project__c == permControlCreate.pse__Project__c)||
-                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Resource__c <> null) && (existingPermControls[i].pse__Resource__c == permControlCreate.pse__Resource__c))
+                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Resource__c <> null) && (existingPermControls[i].pse__Resource__c == permControlCreate.pse__Resource__c)))
                     {
                         permControlCreate.Id = existingPermControls[i].Id;
                         permControlUpdateList.add(permControlCreate);
