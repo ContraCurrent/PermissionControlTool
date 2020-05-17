@@ -19,7 +19,7 @@ public class permControlControllerTest
             ProfileId = p.Id, TimeZoneSidKey='America/Los_Angeles', UserName='demo2@sfdcpdx.com');
         lstUser.add(u2);
 
-        User u3 = new User(Alias = 'demo2', Country='United States', Email='demo3@sfdcpdx.com',
+        User u3 = new User(Alias = 'demo3', Country='United States', Email='demo3@sfdcpdx.com',
             EmailEncodingKey='UTF-8', LastName='Testing', LanguageLocaleKey='en_US', LocaleSidKey='en_US',
             ProfileId = p.Id, TimeZoneSidKey='America/Los_Angeles', UserName='demo3@sfdcpdx.com');
         lstUser.add(u3);
