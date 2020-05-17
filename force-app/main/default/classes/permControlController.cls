@@ -3,22 +3,21 @@ public class permControlController{
     ApexPages.StandardSetController setCon;
     
     public pse__Permission_Control__c permControlEntry {get; set;}  
-    List<pse__Permission_Control__c> permControlList;
+    List<pse__Permission_Control__c> permControlInsertList;
+    List<pse__Permission_Control__c> permControlUpdateList;
     
     public permControlController(ApexPages.StandardSetController controller)
     {
         setCon = controller;
-        permControlList = new List<pse__Permission_Control__c>();
+        permControlInsertList = new List<pse__Permission_Control__c>();
+        permControlUpdateList = new List<pse__Permission_Control__c>();
         permControlEntry = new pse__Permission_Control__c();
     }
 
     public pageReference createPermissions()
     {
-        /** Below action called from Create Permissions button
-         * It takes all values entered in screen
-         * Then creates a new permcontrol record for each Contact that was selected
-         * It adds each one to a list and inserts list
-        */
+        //Below action called from Create Permissions button        
+        //Loop through all selected Contacts and create or update Perm Control for their SFDC User
         for ( Contact con : [SELECT Id, Name, pse__Salesforce_User__c FROM Contact WHERE Id IN :setCon.getSelected()])
         {
             System.debug('Contact SFDC ID = ' + con.pse__Salesforce_User__c);
@@ -55,11 +54,90 @@ public class permControlController{
                 pse__Timecard_Ops_Edit__c = permControlEntry.pse__Timecard_Ops_Edit__c,
                 pse__View_Task_Manager__c = permControlEntry.pse__View_Task_Manager__c
             );
-            System.debug('Perm Control Region =' + permcontrolCreate.get('pse__Region__c'));  
+            
+            //Double check for common error of Salesforce User being blank
+            if (con.pse__Salesforce_User__c == null)
+            {
+                con.pse__Salesforce_User__c.addError('All Selected Contacts/Resources must have their Salesforce User field populated!');
+                return null;
+            }
 
-            permControlList.add(permControlCreate);
+            //Create list of existing Perm Controls for current selected User
+            List<pse__Permission_Control__c> existingPermControls = [
+                SELECT Id, pse__User__c, pse__Region__c, pse__Practice__c, pse__Group__c, pse__Project__c, pse__Resource__c
+                FROM pse__Permission_Control__c
+                WHERE pse__User__c = :con.pse__Salesforce_User__c
+                ];
+            
+            System.debug('Number Existing PermControls for ' + con.Name + ' found: ' + existingPermControls.size());
+            
+            //Check if any Perm Controls match User plus RPGPR combination. Update if so, Insert if not
+            if (existingPermControls.size()>0)
+            {
+                //Loop through all existing to check if an update is possible before defaulting to insert   
+                for (Integer i = 0; i < existingPermControls.size(); i++)
+                {
+                    if( 
+                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Region__c <> null) && (existingPermControls[i].pse__Region__c == permControlCreate.pse__Region__c)||
+                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Practice__c <> null) && (existingPermControls[i].pse__Practice__c == permControlCreate.pse__Practice__c)||
+                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Group__c <> null) && (existingPermControls[i].pse__Group__c == permControlCreate.pse__Group__c)||
+                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Project__c <> null) && (existingPermControls[i].pse__Project__c == permControlCreate.pse__Project__c)||
+                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Resource__c <> null) && (existingPermControls[i].pse__Resource__c == permControlCreate.pse__Resource__c))
+                    {
+                        permControlCreate.Id = existingPermControls[i].Id;
+                        permControlUpdateList.add(permControlCreate);
+                        System.debug('Added to Update List');
+                        break;
+                    }
+                    else if (i == (existingPermControls.size() - 1))
+                    {
+                        permControlInsertList.add(permControlCreate);
+                        System.debug('Added to Insert List');
+                    }
+                }
+            }   
+            else 
+            {
+                permControlInsertList.add(permControlCreate);
+                System.debug('Added to Insert List');
+            }
+                       
         }
-        insert permControlList;
+        System.debug('PermControlInsert List Size ' + permControlInsertList.size());
+        System.debug('PermControlUpdate List Size ' + permControlUpdateList.size());
+
+        
+        try 
+        {
+            insert permControlInsertList;
+            update permControlUpdateList;
+
+            if (permControlInsertList.size() > 0 && permControlUpdateList.size() == 0)
+            {
+                ApexPages.addmessage(new ApexPages.message(ApexPages.severity.CONFIRM,
+                'Created ' + permControlInsertList.size() + ' Permission Control Records'));
+            }
+            else if ((permControlInsertList.size() == 0 && permControlUpdateList.size() > 0))
+            {
+                ApexPages.addmessage(new ApexPages.message(ApexPages.severity.CONFIRM,
+                'Updated ' + permControlUpdateList.size() + ' Permission Control Records'));
+            }
+            else 
+            {
+                ApexPages.addmessage(new ApexPages.message(ApexPages.severity.CONFIRM,
+                'Created ' + permControlInsertList.size() + ' and Updated ' + permControlUpdateList.size() + ' Permission Control Records'));
+            }
+        } 
+        catch (Exception ex) 
+        {
+            Apexpages.addMessages(ex);
+        }
+        
+        //clear out values to create new records for same Users
+        permControlInsertList.clear();
+        permControlUpdateList.clear();
+        permControlEntry.clear();
+
         return null;
     }
 }
