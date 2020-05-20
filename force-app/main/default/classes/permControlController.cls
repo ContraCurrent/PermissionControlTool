@@ -14,16 +14,73 @@ public class permControlController{
         permControlEntry = new pse__Permission_Control__c();
     }
 
+    //Below action called from Create Permissions button on PSAPermControlCreationTool page  
     public pageReference createPermissions()
     {
-        //Below action called from Create Permissions button        
-        //Loop through all selected Contacts and create or update Perm Control for their SFDC User
-        for ( Contact con : [SELECT Id, Name, pse__Salesforce_User__c FROM Contact WHERE Id IN :setCon.getSelected()])
+        //Create list of all selected Contacts
+        List<Contact> selectedContacts = setCon.getselected();
+        
+        /* Get all Salesforce User Id's for selected contacts and populate in Map 
+        * salesforceUser Map format: Contact ID, User ID
+        * Checks for both PSA Resource Salesforce User field and Community User info */
+        Map<Id, Id> salesforceUsers = new Map<Id, Id>();
+        for (Contact c : [SELECT Id, pse__Salesforce_User__c FROM Contact WHERE Id IN :selectedContacts])
         {
-            System.debug('Contact SFDC ID = ' + con.pse__Salesforce_User__c);
+            if (c.pse__Salesforce_User__c <> null)
+            {
+                salesforceUsers.put(c.Id, c.pse__Salesforce_User__c);
+            }
+        }
+        for (User u : [SELECT Id, ContactID FROM User WHERE (ContactID IN :selectedContacts) AND (Id NOT IN :salesforceUsers.values())])
+        {
+            salesforceUsers.put(u.ContactID, u.Id);
+        }
+        System.debug('Number of User ID\'s found: ' + salesforceUsers.size());
+        
+        //Double check for common error of selected Contact having no User
+        if (salesforceUsers.size() <> selectedContacts.size())
+        {
+            ApexPages.addmessage(new ApexPages.message(ApexPages.severity.ERROR,
+                'All selected Contacts must have a populated Salesforce User field or be a Community User'));
+            return null;
+        }
+        System.debug('All Contacts found to have associated User');
+
+        /* Get all existing Permission Controls for selected Contacts' Salesforce User ID's
+        * Key Id is pse__User__c field instead of Permission Control record Id */
+        List<Id> usrIds = salesforceUsers.values();
+        Map<Id, List<pse__Permission_Control__c>> existingPermControlsMap = new Map<Id, List<pse__Permission_Control__c>>();
+        List<pse__Permission_Control__c> existingPermControls = new List<pse__Permission_Control__c>();
+
+        for (pse__Permission_Control__c perm : [
+            SELECT Id, pse__User__c, pse__Region__c, pse__Practice__c, pse__Group__c, pse__Project__c, pse__Resource__c
+            FROM pse__Permission_Control__c LIMIT 50000
+            ])
+        {
+            if (existingPermControlsMap.containsKey(perm.pse__User__c))
+            {
+                List<pse__Permission_Control__c> existingPermControlsAdd = existingPermControlsMap.get(perm.pse__User__c);
+                existingPermControlsAdd.add(perm);
+                existingPermControlsMap.put(perm.pse__User__c, existingPermControlsAdd);
+                System.debug('Added permControl to values list for existing key');
+            }
+            else if (usrIds.contains(perm.pse__User__c))
+            {
+                List<pse__Permission_Control__c> existingPermControlsNew = new List<pse__Permission_Control__c>();
+                existingPermControlsNew.add(perm);
+                existingPermControlsMap.put(perm.pse__User__c, existingPermControlsNew);
+                System.debug('created permControl values list for new key');
+            }
+        }        
+        System.debug('Number of Users Permission Controls found for: ' + existingPermControlsMap.size());
+
+        //Loop through all selected Users and create or update a Perm Control for them
+        for (Id usr : salesforceUsers.values())
+        {
+            System.debug('Salesforce User = ' + usr);
             pse__Permission_Control__c permControlCreate = new pse__Permission_Control__c
             (
-                pse__User__c = con.pse__Salesforce_User__c,
+                pse__User__c = usr,
                 pse__Billing__c = permControlEntry.pse__Billing__c,
                 pse__Cascading_Permission__c = permControlEntry.pse__Cascading_Permission__c,
                 pse__Compare_Project_Version__c = permControlEntry.pse__Compare_Project_Version__c,
@@ -55,41 +112,32 @@ public class permControlController{
                 pse__View_Task_Manager__c = permControlEntry.pse__View_Task_Manager__c
             );
             
-            //Double check for common error of Salesforce User being blank
-            if (con.pse__Salesforce_User__c == null)
-            {
-                con.pse__Salesforce_User__c.addError('All Selected Contacts/Resources must have their Salesforce User field populated!');
-                return null;
-            }
+            System.debug('Map contains values for user in key ' + existingPermControlsMap.containsKey(usr));
 
-            //Create list of existing Perm Controls for current selected User
-            List<pse__Permission_Control__c> existingPermControls = [
-                SELECT Id, pse__User__c, pse__Region__c, pse__Practice__c, pse__Group__c, pse__Project__c, pse__Resource__c
-                FROM pse__Permission_Control__c
-                WHERE pse__User__c = :con.pse__Salesforce_User__c
-                ];
-            
-            System.debug('Number Existing PermControls for ' + con.Name + ' found: ' + existingPermControls.size());
+            List<pse__Permission_Control__c> usrPermControls = new List<pse__Permission_Control__c>();
+            usrPermControls = existingPermControlsMap.get(usr);
+
+            System.debug('Number Existing PermControls found for User: ' + usrPermControls.size());
             
             //Check if any Perm Controls match User plus RPGPR combination. Update if so, Insert if not
-            if (existingPermControls.size()>0)
+            if (usrPermControls.size()>0)
             {
                 //Loop through all existing to check if an update is possible before defaulting to insert   
-                for (Integer i = 0; i < existingPermControls.size(); i++)
+                for (Integer i = 0; i < usrPermControls.size(); i++)
                 {
                     if( 
-                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Region__c <> null) && (existingPermControls[i].pse__Region__c == permControlCreate.pse__Region__c)||
-                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Practice__c <> null) && (existingPermControls[i].pse__Practice__c == permControlCreate.pse__Practice__c)||
-                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Group__c <> null) && (existingPermControls[i].pse__Group__c == permControlCreate.pse__Group__c)||
-                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Project__c <> null) && (existingPermControls[i].pse__Project__c == permControlCreate.pse__Project__c)||
-                    (existingPermControls[i].pse__User__c == con.pse__Salesforce_User__c) && (existingPermControls[i].pse__Resource__c <> null) && (existingPermControls[i].pse__Resource__c == permControlCreate.pse__Resource__c))
+                    (usrPermControls[i].pse__Region__c <> null) && (usrPermControls[i].pse__Region__c == permControlCreate.pse__Region__c)||
+                    (usrPermControls[i].pse__Practice__c <> null) && (usrPermControls[i].pse__Practice__c == permControlCreate.pse__Practice__c)||
+                    (usrPermControls[i].pse__Group__c <> null) && (usrPermControls[i].pse__Group__c == permControlCreate.pse__Group__c)||
+                    (usrPermControls[i].pse__Project__c <> null) && (usrPermControls[i].pse__Project__c == permControlCreate.pse__Project__c)||
+                    (usrPermControls[i].pse__Resource__c <> null) && (usrPermControls[i].pse__Resource__c == permControlCreate.pse__Resource__c))
                     {
-                        permControlCreate.Id = existingPermControls[i].Id;
+                        permControlCreate.Id = usrPermControls[i].Id;
                         permControlUpdateList.add(permControlCreate);
                         System.debug('Added to Update List');
                         break;
                     }
-                    else if (i == (existingPermControls.size() - 1))
+                    else if (i == (usrPermControls.size() - 1))
                     {
                         permControlInsertList.add(permControlCreate);
                         System.debug('Added to Insert List');
