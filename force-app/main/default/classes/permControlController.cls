@@ -50,7 +50,6 @@ public class permControlController{
         * Key Id is pse__User__c field instead of Permission Control record Id */
         List<Id> usrIds = salesforceUsers.values();
         Map<Id, List<pse__Permission_Control__c>> existingPermControlsMap = new Map<Id, List<pse__Permission_Control__c>>();
-        List<pse__Permission_Control__c> existingPermControls = new List<pse__Permission_Control__c>();
 
         for (pse__Permission_Control__c perm : [
             SELECT Id, pse__User__c, pse__Region__c, pse__Practice__c, pse__Group__c, pse__Project__c, pse__Resource__c
@@ -59,17 +58,13 @@ public class permControlController{
         {
             if (existingPermControlsMap.containsKey(perm.pse__User__c))
             {
-                List<pse__Permission_Control__c> existingPermControlsAdd = existingPermControlsMap.get(perm.pse__User__c);
-                existingPermControlsAdd.add(perm);
-                existingPermControlsMap.put(perm.pse__User__c, existingPermControlsAdd);
-                System.debug('Added permControl to values list for existing key');
+                List<pse__Permission_Control__c> existingPermControls = existingPermControlsMap.get(perm.pse__User__c);
+                existingPermControls.add(perm);
+                existingPermControlsMap.put(perm.pse__User__c, existingPermControls);
             }
             else if (usrIds.contains(perm.pse__User__c))
             {
-                List<pse__Permission_Control__c> existingPermControlsNew = new List<pse__Permission_Control__c>();
-                existingPermControlsNew.add(perm);
-                existingPermControlsMap.put(perm.pse__User__c, existingPermControlsNew);
-                System.debug('created permControl values list for new key');
+                existingPermControlsMap.put(perm.pse__User__c, new List<pse__Permission_Control__c>{perm});
             }
         }        
         System.debug('Number of Users Permission Controls found for: ' + existingPermControlsMap.size());
@@ -112,38 +107,41 @@ public class permControlController{
                 pse__View_Task_Manager__c = permControlEntry.pse__View_Task_Manager__c
             );
             
+            /* Check if any Perm Controls exist for User
+            * Then evaluate if any existing match existing RPGPR
+            * If find match, update existing, if not, insert new */
             System.debug('Map contains values for user in key ' + existingPermControlsMap.containsKey(usr));
 
-            List<pse__Permission_Control__c> usrPermControls = new List<pse__Permission_Control__c>();
-            usrPermControls = existingPermControlsMap.get(usr);
-
-            System.debug('Number Existing PermControls found for User: ' + usrPermControls.size());
-            
-            //Check if any Perm Controls match User plus RPGPR combination. Update if so, Insert if not
-            if (usrPermControls.size()>0)
+            if (existingPermControlsMap.containsKey(usr))
             {
-                //Loop through all existing to check if an update is possible before defaulting to insert   
-                for (Integer i = 0; i < usrPermControls.size(); i++)
-                {
-                    if( 
-                    (usrPermControls[i].pse__Region__c <> null) && (usrPermControls[i].pse__Region__c == permControlCreate.pse__Region__c)||
-                    (usrPermControls[i].pse__Practice__c <> null) && (usrPermControls[i].pse__Practice__c == permControlCreate.pse__Practice__c)||
-                    (usrPermControls[i].pse__Group__c <> null) && (usrPermControls[i].pse__Group__c == permControlCreate.pse__Group__c)||
-                    (usrPermControls[i].pse__Project__c <> null) && (usrPermControls[i].pse__Project__c == permControlCreate.pse__Project__c)||
-                    (usrPermControls[i].pse__Resource__c <> null) && (usrPermControls[i].pse__Resource__c == permControlCreate.pse__Resource__c))
+                List<pse__Permission_Control__c> usrPermControls = new List<pse__Permission_Control__c>();
+                usrPermControls = existingPermControlsMap.get(usr);
+                System.debug('Number Existing PermControls found for User: ' + usrPermControls.size());
+
+                if (usrPermControls.size()>0)
+                {   
+                    for (Integer i = 0; i < usrPermControls.size(); i++)
                     {
-                        permControlCreate.Id = usrPermControls[i].Id;
-                        permControlUpdateList.add(permControlCreate);
-                        System.debug('Added to Update List');
-                        break;
+                        if( 
+                        (usrPermControls[i].pse__Region__c <> null) && (usrPermControls[i].pse__Region__c == permControlCreate.pse__Region__c)||
+                        (usrPermControls[i].pse__Practice__c <> null) && (usrPermControls[i].pse__Practice__c == permControlCreate.pse__Practice__c)||
+                        (usrPermControls[i].pse__Group__c <> null) && (usrPermControls[i].pse__Group__c == permControlCreate.pse__Group__c)||
+                        (usrPermControls[i].pse__Project__c <> null) && (usrPermControls[i].pse__Project__c == permControlCreate.pse__Project__c)||
+                        (usrPermControls[i].pse__Resource__c <> null) && (usrPermControls[i].pse__Resource__c == permControlCreate.pse__Resource__c))
+                        {
+                            permControlCreate.Id = usrPermControls[i].Id;
+                            permControlUpdateList.add(permControlCreate);
+                            System.debug('Added to Update List');
+                            break;
+                        }
+                        else if (i == (usrPermControls.size() - 1))
+                        {
+                            permControlInsertList.add(permControlCreate);
+                            System.debug('Added to Insert List');
+                        }
                     }
-                    else if (i == (usrPermControls.size() - 1))
-                    {
-                        permControlInsertList.add(permControlCreate);
-                        System.debug('Added to Insert List');
-                    }
-                }
-            }   
+                }   
+            }     
             else 
             {
                 permControlInsertList.add(permControlCreate);

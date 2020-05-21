@@ -45,7 +45,7 @@ public class permControlControllerTest
         
         Contact person4 = new Contact(FirstName = 'Tim', LastName = 'Mathis', Email = 'demo4@sfdcpdx.com',
             pse__Is_Resource__c = true, pse__Is_Resource_Active__c = true);
-        lstContact.add(person4);
+        lstContact.add(person4); 
 
         insert lstContact;
 
@@ -79,7 +79,7 @@ public class permControlControllerTest
         //Instantiate page and controller extension and send StandardSetControl ID's from newly created Contacts
         Test.startTest();
         
-        List<Contact> lstContact = [SELECT Id FROM Contact WHERE pse__Salesforce_User__c != null];
+        List<Contact> lstContact = [SELECT Id, pse__Salesforce_User__c FROM Contact WHERE pse__Salesforce_User__c != null];
         pse__Region__c testregion = [SELECT Id FROM pse__Region__c];
     
         Test.setCurrentPage(Page.PSAPermControlCreationTool);
