@@ -1,3 +1,11 @@
+/*
+* Date: May 21, 2020
+* Author: Chris Moreno
+* Description: Test permControlController Visualforce Controller extension 
+* which handles PSAPermControlCreationTool page.
+* History: Created 5/21/2020
+**/
+
 @isTest 
 public class permControlControllerTest
 {
