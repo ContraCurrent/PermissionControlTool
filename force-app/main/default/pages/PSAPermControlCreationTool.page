@@ -1,3 +1,13 @@
+<!--
+* Date: May 21, 2020
+* Author: Chris Moreno
+* Description: Visualforce Page used to mass-generate or update Permission Control records 
+* in FinancialForce PSA. Page launched from List button on Contact tab. 
+* Uses StandardSetController to collect selected values and a Controller extension
+* to handle save button override 
+* History: Created 5/21/2020
+-->
+
 <apex:page standardController="Contact" recordSetVar="contacts" extensions="permControlController" lightningStylesheets="true">
     <apex:form >
         <apex:pageBlock mode="edit" title="Generate Permission Controls">

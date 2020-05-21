@@ -1,8 +1,18 @@
+/*
+* Date: May 21, 2020
+* Author: Chris Moreno
+* Description: Test permControlController Visualforce Controller extension 
+* which handles PSAPermControlCreationTool page.
+* History: Created 5/21/2020
+**/
+
 @isTest 
 public class permControlControllerTest
 {
-    static testMethod void testMethod1() 
+    @TestSetup
+    static void setup()
     {
+        Test.startTest();
         //Get ID of Standard User Profile
         Profile p = [SELECT Id FROM Profile WHERE Name='Standard User']; 
 
@@ -41,6 +51,10 @@ public class permControlControllerTest
             pse__Is_Resource__c = true, pse__Is_Resource_Active__c = true, pse__Salesforce_User__c = u3.Id);
         lstContact.add(person3);
         
+        Contact person4 = new Contact(FirstName = 'Tim', LastName = 'Mathis', Email = 'demo4@sfdcpdx.com',
+            pse__Is_Resource__c = true, pse__Is_Resource_Active__c = true);
+        lstContact.add(person4); 
+
         insert lstContact;
 
         //Create a dummy Region and Practice to be added to Permission Controls
@@ -64,13 +78,23 @@ public class permControlControllerTest
         testPermList.add(testPerm2);
 
         insert testPermList;
-
+        Test.stopTest();
+    }
+    
+    @IsTest
+    static void testMethod1() 
+    {
         //Instantiate page and controller extension and send StandardSetControl ID's from newly created Contacts
         Test.startTest();
+        
+        List<Contact> lstContact = [SELECT Id, pse__Salesforce_User__c FROM Contact WHERE pse__Salesforce_User__c != null];
+        pse__Region__c testregion = [SELECT Id FROM pse__Region__c];
+    
         Test.setCurrentPage(Page.PSAPermControlCreationTool);
         ApexPages.StandardSetController stdSetController = new ApexPages.StandardSetController(lstContact);
         stdSetController.setSelected(lstContact);
         permControlController ext = new permControlController(stdSetController);
+
 
         //Set values for new Permission Control records to be created and execute creation code
         ext.permControlEntry.pse__Region__c = testregion.Id;
@@ -81,7 +105,6 @@ public class permControlControllerTest
         List<pse__Permission_Control__c> verifyPermInsert = [
             SELECT Id 
             FROM pse__Permission_Control__c 
-            WHERE pse__User__c = :u1.Id OR pse__User__c = :u2.Id OR pse__User__c = :u3.Id
             ];
 
         //Code should create 3 and update 1 Permission Control for above Users, so verify 4 exist
@@ -90,4 +113,36 @@ public class permControlControllerTest
 
         Test.stopTest();
     }
+
+    /* In Development adding code to test errors
+    @isTest
+    static void testMethod2()
+    {
+            Test.startTest();
+        
+            List<Contact> lstContact = [SELECT Id FROM Contact WHERE pse__Salesforce_User__c = null];
+            pse__Region__c testregion = [SELECT Id FROM pse__Region__c];
+        
+            Test.setCurrentPage(Page.PSAPermControlCreationTool);
+            ApexPages.StandardSetController stdSetController = new ApexPages.StandardSetController(lstContact);
+            stdSetController.setSelected(lstContact);
+            permControlController ext = new permControlController(stdSetController);
+
+             //Set values for new Permission Control records to be created and execute creation code
+            ext.permControlEntry.pse__Region__c = testregion.Id;
+            ext.permControlEntry.pse__Staffing__c = true;
+            ext.createPermissions();
+
+            List<Apexpages.Message> msgs = stdSetController.getMessages();
+            boolean b = false;
+            for(Apexpages.Message msg:msgs)
+            {
+                if (msg.getDetail().contains('All Selected Contacts/Resources must have their') b = true;
+            }
+            system.assert(b);//Assert the Page Message was Properly Displayed
+        
+            System.assertEquals(controller.permControlController(),null);
+
+            Test.stopTest();
+    }*/
 }
