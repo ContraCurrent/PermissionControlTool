@@ -5,8 +5,58 @@
     <confirmationTokenRequired>false</confirmationTokenRequired>
     <label>PSAPermControlCreationTool</label>
     <packageVersions>
+        <majorNumber>2019</majorNumber>
+        <minorNumber>401</minorNumber>
+        <namespace>appirio_core</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>4</majorNumber>
+        <minorNumber>1</minorNumber>
+        <namespace>ffc</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>2</majorNumber>
+        <minorNumber>7</minorNumber>
+        <namespace>ffct</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>2019</majorNumber>
+        <minorNumber>401</minorNumber>
+        <namespace>fferpcore</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>5</majorNumber>
+        <minorNumber>4</minorNumber>
+        <namespace>ffirule</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>2019</majorNumber>
+        <minorNumber>401</minorNumber>
+        <namespace>ffr</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>1</majorNumber>
+        <minorNumber>19</minorNumber>
+        <namespace>ob1</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>1</majorNumber>
+        <minorNumber>49</minorNumber>
+        <namespace>psa_m</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>1</majorNumber>
+        <minorNumber>12</minorNumber>
+        <namespace>psa_report</namespace>
+    </packageVersions>
+    <packageVersions>
         <majorNumber>2018</majorNumber>
         <minorNumber>403</minorNumber>
         <namespace>pse</namespace>
+    </packageVersions>
+    <packageVersions>
+        <majorNumber>1</majorNumber>
+        <minorNumber>7</minorNumber>
+        <namespace>sf_com_apps</namespace>
     </packageVersions>
 </ApexPage>
