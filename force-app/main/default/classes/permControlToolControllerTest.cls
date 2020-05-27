@@ -1,13 +1,13 @@
 /*
 * Date: May 21, 2020
 * Author: Chris Moreno
-* Description: Test permControlController Visualforce Controller extension 
+* Description: Test permControlToolController Visualforce Controller extension 
 * which handles PSAPermControlCreationTool page.
 * History: Created 5/21/2020
 **/
 
 @isTest 
-public class permControlControllerTest
+public class permControlToolControllerTest
 {
     @TestSetup
     static void setup()
@@ -84,7 +84,7 @@ public class permControlControllerTest
         Test.setCurrentPage(Page.PSAPermControlCreationTool);
         ApexPages.StandardSetController stdSetController = new ApexPages.StandardSetController(lstContact);
         stdSetController.setSelected(lstContact);
-        permControlController ext = new permControlController(stdSetController);
+        permControlToolController ext = new permControlToolController(stdSetController);
 
 
         // Set values for new Permission Control records to be created and execute creation code
@@ -135,7 +135,7 @@ public class permControlControllerTest
         Test.setCurrentPage(Page.PSAPermControlCreationTool);
         ApexPages.StandardSetController stdSetController = new ApexPages.StandardSetController(lstContact);
         stdSetController.setSelected(lstContact);
-        permControlController ext = new permControlController(stdSetController);
+        permControlToolController ext = new permControlToolController(stdSetController);
 
         // Set values for new Permission Control records to be created and execute creation code
         ext.permControlEntry.pse__Practice__c = testPractice.Id;
@@ -193,7 +193,7 @@ public class permControlControllerTest
         Test.setCurrentPage(Page.PSAPermControlCreationTool);
         ApexPages.StandardSetController stdSetController = new ApexPages.StandardSetController(lstContact);
         stdSetController.setSelected(lstContact);
-        permControlController ext = new permControlController(stdSetController);
+        permControlToolController ext = new permControlToolController(stdSetController);
 
 
         // Set values for new Permission Control records to be created and execute creation code
@@ -243,7 +243,7 @@ public class permControlControllerTest
         Test.setCurrentPage(Page.PSAPermControlCreationTool);
         ApexPages.StandardSetController stdSetController = new ApexPages.StandardSetController(lstContact);
         stdSetController.setSelected(lstContact);
-        permControlController ext = new permControlController(stdSetController);
+        permControlToolController ext = new permControlToolController(stdSetController);
 
         // Set values for new Permission Control records to be created and execute creation code
         ext.permControlEntry.pse__Region__c = testRegion.Id;
@@ -280,7 +280,7 @@ public class permControlControllerTest
         Test.setCurrentPage(Page.PSAPermControlCreationTool);
         ApexPages.StandardSetController stdSetController = new ApexPages.StandardSetController(lstContact);
         stdSetController.setSelected(lstContact);
-        permControlController ext = new permControlController(stdSetController);
+        permControlToolController ext = new permControlToolController(stdSetController);
 
         // Set values for new Permission Control records to be created and execute creation code
         ext.permControlEntry.pse__Region__c = testRegion.Id;

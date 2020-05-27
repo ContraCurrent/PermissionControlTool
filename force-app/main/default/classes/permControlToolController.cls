@@ -7,7 +7,7 @@
 * History: Created 5/21/2020
 **/
 
-public class permControlController {
+public class permControlToolController {
     
     ApexPages.StandardSetController setCon;
     
@@ -15,7 +15,7 @@ public class permControlController {
     List<pse__Permission_Control__c> permControlInsertList;
     List<pse__Permission_Control__c> permControlUpdateList;
     
-    public permControlController(ApexPages.StandardSetController controller) {
+    public permControlToolController(ApexPages.StandardSetController controller) {
         setCon = controller;
         permControlInsertList = new List<pse__Permission_Control__c>();
         permControlUpdateList = new List<pse__Permission_Control__c>();
