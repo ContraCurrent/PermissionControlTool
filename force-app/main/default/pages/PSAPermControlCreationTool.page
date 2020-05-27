@@ -8,7 +8,7 @@
 * History: Created 5/21/2020
 -->
 
-<apex:page standardController="Contact" recordSetVar="contacts" extensions="permControlController" lightningStylesheets="true">
+<apex:page standardController="Contact" recordSetVar="contacts" extensions="permControlToolController" lightningStylesheets="true">
     <apex:form >
         <apex:pageBlock mode="edit" title="Generate Permission Controls">
             <apex:pageMessages />
